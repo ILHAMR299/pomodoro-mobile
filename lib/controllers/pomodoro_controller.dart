@@ -1,0 +1,119 @@
+import 'dart:async';
+
+import 'package:flutter/foundation.dart';
+
+import '../models/pomodoro_state.dart';
+
+class PomodoroController extends ChangeNotifier {
+  PomodoroController({
+    this.focusMinutes = 25,
+    this.breakMinutes = 5,
+    DateTime Function()? clock,
+  }) : _clock = clock ?? DateTime.now,
+       _remaining = Duration(minutes: focusMinutes),
+       _totalDuration = Duration(minutes: focusMinutes);
+
+  int focusMinutes;
+  int breakMinutes;
+  Timer? _ticker;
+  final DateTime Function() _clock;
+  DateTime? _endsAt;
+  Duration _remaining;
+  Duration _totalDuration;
+  TimerStatus _status = TimerStatus.idle;
+  SessionType _session = SessionType.focus;
+  int _completedFocusSessions = 0;
+
+  PomodoroSnapshot get snapshot => PomodoroSnapshot(
+    status: _status,
+    session: _session,
+    remaining: _remaining,
+    totalDuration: _totalDuration,
+    completedFocusSessions: _completedFocusSessions,
+    sessionNumber: _completedFocusSessions + 1,
+  );
+
+  void start() {
+    if (_status == TimerStatus.running) return;
+    _status = TimerStatus.running;
+    _endsAt = _clock().add(_remaining);
+    _ticker?.cancel();
+    _ticker = Timer.periodic(const Duration(seconds: 1), (_) => _refresh());
+    notifyListeners();
+  }
+
+  void pause() {
+    if (_status != TimerStatus.running) return;
+    _remaining = _remainingAt(_clock());
+    _ticker?.cancel();
+    _ticker = null;
+    _endsAt = null;
+    _status = TimerStatus.paused;
+    notifyListeners();
+  }
+
+  void reset() {
+    _ticker?.cancel();
+    _ticker = null;
+    _endsAt = null;
+    _session = SessionType.focus;
+    _status = TimerStatus.idle;
+    _remaining = Duration(minutes: focusMinutes);
+    _totalDuration = _remaining;
+    notifyListeners();
+  }
+
+  void updateDurations({required int focus, required int rest}) {
+    focusMinutes = focus.clamp(1, 90).toInt();
+    breakMinutes = rest.clamp(1, 30).toInt();
+    reset();
+  }
+
+  void refreshAfterLifecycleChange() {
+    if (_status == TimerStatus.running) _refresh();
+  }
+
+  Duration _remainingAt(DateTime now) {
+    final end = _endsAt;
+    if (end == null) return _remaining;
+    final difference = end.difference(now);
+    return difference.isNegative ? Duration.zero : difference;
+  }
+
+  void _refresh() {
+    if (_status != TimerStatus.running) return;
+    _remaining = _remainingAt(_clock());
+    if (_remaining == Duration.zero) {
+      _completeSession();
+      return;
+    }
+    notifyListeners();
+  }
+
+  void _completeSession() {
+    _ticker?.cancel();
+    _ticker = null;
+    _endsAt = null;
+    if (_session == SessionType.focus) {
+      _completedFocusSessions++;
+      _session = SessionType.breakTime;
+      _remaining = Duration(minutes: breakMinutes);
+      _totalDuration = _remaining;
+      _status = TimerStatus.running;
+      _endsAt = _clock().add(_remaining);
+      _ticker = Timer.periodic(const Duration(seconds: 1), (_) => _refresh());
+    } else {
+      _session = SessionType.focus;
+      _remaining = Duration(minutes: focusMinutes);
+      _totalDuration = _remaining;
+      _status = TimerStatus.idle;
+    }
+    notifyListeners();
+  }
+
+  @override
+  void dispose() {
+    _ticker?.cancel();
+    super.dispose();
+  }
+}
