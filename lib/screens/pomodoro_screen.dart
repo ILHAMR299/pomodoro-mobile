@@ -6,11 +6,18 @@ import '../theme/app_theme.dart';
 import '../widgets/mascot_widget.dart';
 
 class PomodoroScreen extends StatefulWidget {
-  const PomodoroScreen({super.key, this.controller, this.userName, this.onLogout});
+  const PomodoroScreen({
+    super.key,
+    this.controller,
+    this.userName,
+    this.onLogout,
+    this.onStartRequested,
+  });
 
   final PomodoroController? controller;
   final String? userName;
   final Future<void> Function()? onLogout;
+  final Future<bool> Function()? onStartRequested;
 
   @override
   State<PomodoroScreen> createState() => _PomodoroScreenState();
@@ -71,9 +78,9 @@ class _PomodoroScreenState extends State<PomodoroScreen>
                               ? snapshot.isBreak
                                     ? 'Tarik napas, kamu sudah bekerja keras.'
                                     : 'Satu hal dalam satu waktu.'
-                          : widget.userName == null
-                          ? 'Hai, siap untuk fokus hari ini?'
-                          : 'Hai, ${widget.userName}, siap untuk fokus hari ini?',
+                              : widget.userName == null
+                              ? 'Hai, siap untuk fokus hari ini?'
+                              : 'Hai, ${widget.userName}, siap untuk fokus hari ini?',
                           textAlign: TextAlign.center,
                           style: const TextStyle(
                             color: AppTheme.darkGreen,
@@ -127,7 +134,7 @@ class _PomodoroScreenState extends State<PomodoroScreen>
         const SizedBox(width: 11),
         const Expanded(
           child: Text(
-            'Teman Fokus',
+            'FocusMaxx',
             style: TextStyle(
               fontSize: 21,
               fontWeight: FontWeight.w700,
@@ -171,7 +178,7 @@ class _PomodoroScreenState extends State<PomodoroScreen>
       runSpacing: 10,
       children: [
         FilledButton.icon(
-          onPressed: canStart ? _controller.start : _controller.pause,
+          onPressed: canStart ? _start : _controller.pause,
           icon: Icon(running ? Icons.pause_rounded : Icons.play_arrow_rounded),
           label: Text(label),
         ),
@@ -190,6 +197,12 @@ class _PomodoroScreenState extends State<PomodoroScreen>
         ),
       ],
     );
+  }
+
+  Future<void> _start() async {
+    final allowed = await widget.onStartRequested?.call() ?? true;
+    if (!allowed || !mounted) return;
+    _controller.start();
   }
 
   Widget _sessionDetails(PomodoroSnapshot snapshot) {
@@ -347,7 +360,10 @@ class _PomodoroScreenState extends State<PomodoroScreen>
             if (widget.onLogout != null)
               TextButton(
                 onPressed: () => Navigator.pop(dialogContext, 'logout'),
-                child: const Text('Keluar Akun', style: TextStyle(color: Color(0xFF9C3028))),
+                child: const Text(
+                  'Keluar Akun',
+                  style: TextStyle(color: Color(0xFF9C3028)),
+                ),
               ),
             TextButton(
               onPressed: () => Navigator.pop(dialogContext),
@@ -386,10 +402,18 @@ class _PomodoroScreenState extends State<PomodoroScreen>
         context: context,
         builder: (dialogContext) => AlertDialog(
           title: const Text('Keluar dari akun?'),
-          content: const Text('Akun dan sesi fokusmu tetap tersimpan di perangkat ini.'),
+          content: const Text(
+            'Akun dan sesi fokusmu tetap tersimpan di perangkat ini.',
+          ),
           actions: [
-            TextButton(onPressed: () => Navigator.pop(dialogContext, false), child: const Text('Batal')),
-            FilledButton(onPressed: () => Navigator.pop(dialogContext, true), child: const Text('Keluar')),
+            TextButton(
+              onPressed: () => Navigator.pop(dialogContext, false),
+              child: const Text('Batal'),
+            ),
+            FilledButton(
+              onPressed: () => Navigator.pop(dialogContext, true),
+              child: const Text('Keluar'),
+            ),
           ],
         ),
       );

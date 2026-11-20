@@ -10,6 +10,6 @@ class MascotBrand extends StatelessWidget {
   Widget build(BuildContext context) => Column(children: [
     SizedBox(width: 142, height: 112, child: Lottie.asset('assets/animations/Cutecatillustration.json', fit: BoxFit.contain)),
     const SizedBox(height: 2),
-    const Text('Teman Fokus', style: TextStyle(fontSize: 19, fontWeight: FontWeight.w700, color: AppTheme.darkGreen)),
+    const Text('FocusMaxx', style: TextStyle(fontSize: 19, fontWeight: FontWeight.w700, color: AppTheme.darkGreen)),
   ]);
 }

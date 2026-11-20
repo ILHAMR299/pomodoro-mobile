@@ -21,7 +21,7 @@ class LoadingScreen extends StatelessWidget {
             ),
             const SizedBox(height: 8),
             const Text(
-              'Teman Fokus',
+              'FocusMaxx',
               style: TextStyle(
                 fontSize: 24,
                 fontWeight: FontWeight.w700,

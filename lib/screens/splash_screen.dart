@@ -17,7 +17,7 @@ class SplashScreen extends StatelessWidget {
       child: Column(mainAxisSize: MainAxisSize.min, children: [
         SizedBox(width: 210, height: 210, child: LottieBuilder.asset('assets/animations/loadingscreen.json', fit: BoxFit.contain)),
         const SizedBox(height: 8),
-        const Text('Teman Fokus', style: TextStyle(fontSize: 25, fontWeight: FontWeight.w700, color: AppTheme.darkGreen)),
+        const Text('FocusMaxx', style: TextStyle(fontSize: 25, fontWeight: FontWeight.w700, color: AppTheme.darkGreen)),
         const SizedBox(height: 6),
         const Text('Temani setiap langkah fokusmu.', textAlign: TextAlign.center, style: TextStyle(color: AppTheme.darkGreen)),
         if (loading) ...[const SizedBox(height: 22), const SizedBox(width: 22, height: 22, child: CircularProgressIndicator(strokeWidth: 2, color: AppTheme.green))],
